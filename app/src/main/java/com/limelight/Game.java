@@ -46,6 +46,7 @@ import com.limelight.ui.StreamContainer;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ExternalDisplayControlActivity;
 import com.limelight.utils.MouseModeOption;
+import com.limelight.utils.GlassLens;
 import com.limelight.utils.PanelDriver;
 import com.limelight.utils.PanZoomHandler;
 import com.limelight.utils.PerformanceDataTracker;
@@ -3437,7 +3438,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
      *         toggle when there is something to toggle.
      */
     public boolean is3DAvailable() {
-        return prefConfig.stereoOutputMode != 0
+        // On the SpatialGlass film the film itself is the 3D display, so 3D is there whatever
+        // the output format setting says.
+        return (prefConfig.stereoOutputMode != 0 || GlassLens.enabled)
                 && (leiaDisplay != null || prefConfig.renderMode != 0);
     }
 
@@ -3802,7 +3805,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
                 // The stream is live, so the weave can come on without garbling the
                 // connection UI that was on screen until now.
-                if (prefConfig.autoEnable3D && prefConfig.stereoOutputMode != 0) {
+                if (prefConfig.autoEnable3D && (prefConfig.stereoOutputMode != 0 || GlassLens.enabled)) {
                     set3DMode(true);
                 }
 

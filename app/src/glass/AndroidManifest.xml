@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Extras the glass flavour (S25 Ultra + SpatialGlass film) needs, merged into the main
+    manifest: the front camera, which follows the viewer's eyes so the weave moves with them.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+
+</manifest>

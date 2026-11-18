@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Glass flavour (S25 Ultra + SpatialGlass film). The film weaves two views, so the
+    four-view choice is dropped. The first 3D source means the host already sends side by
+    side, which this build weaves itself (GlassSbsRenderer); the other two make 3D from a 2D
+    stream with the depth model, as before.
+-->
+<resources>
+
+    <string-array name="stereo_output_mode_names">
+        <item>@string/stereo_output_sbs</item>
+        <item>@string/stereo_output_interlaced_2v</item>
+    </string-array>
+
+    <string-array name="stereo_output_mode_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string-array name="render_mode_names">
+        <item>@string/render_mode_2d</item>
+        <item>@string/render_mode_3d_sbs</item>
+        <item>@string/render_mode_3d_sbs_movie</item>
+    </string-array>
+
+    <string-array name="render_mode_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+</resources>

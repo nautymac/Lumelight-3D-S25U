@@ -182,6 +182,98 @@ public class ShaderUtils {
 
 
     /**
+     * {@link #FRAGMENT_SHADER_3D} for a lens film over an ordinary screen (S25 Ultra +
+     * SpatialGlass, see {@link GlassLens}).
+     *
+     * Drawn once over the full viewport like the interlaced variant, but every pixel needs
+     * both eyes: the film's weave mixes left and right per colour channel by the pixel's lens
+     * phase, which also moves with the tracked eye position, rather than picking one eye per
+     * fixed column. So the depth-shifted colour is worked out for each eye and the two are
+     * woven by {@code glassWeave}.
+     */
+    public static final String FRAGMENT_SHADER_3D_GLASS =
+            "#extension GL_OES_EGL_image_external : require\n" +
+                    "#ifdef GL_FRAGMENT_PRECISION_HIGH\n" +
+                    "precision highp float;\n" +
+                    "#else\n" +
+                    "precision mediump float;\n" +
+                    "#endif\n" +
+                    "varying vec2 v_TexCoord;\n" +
+                    "uniform samplerExternalOES s_ColorTexture;\n" +
+                    "uniform sampler2D s_DepthTexture;\n" +
+                    "uniform float u_parallax;\n" +
+                    "uniform float u_convergence;\n" +
+                    "uniform float u_shift;\n" +
+                    "uniform bool u_debugMode;\n" +
+                    GlassLens.GLSL +
+                    "\n" +
+                    "// Same depth-image warp as FRAGMENT_SHADER_3D, for one eye: parallax < 0 is the left.\n" +
+                    "vec3 eyeColor(float parallax, float depth, float maxEdgeShift) {\n" +
+                    "  float depthDiff;\n" +
+                    "  if (depth < u_convergence) {\n" +
+                    "    depthDiff = (depth - u_convergence) / u_convergence;\n" +
+                    "  } else {\n" +
+                    "    depthDiff = (depth - u_convergence) / (1.0 - u_convergence);\n" +
+                    "  }\n" +
+                    "  float parallax_magnitude = abs(parallax);\n" +
+                    "  float ai_shift = parallax_magnitude * depthDiff;\n" +
+                    "  bool isLeftEye = (parallax < 0.0);\n" +
+                    "  float isLeftEyeIndicator = isLeftEye ? -1.0 : 1.0;\n" +
+                    "  float vignette_start = mix(0.7, 1.0, clamp(maxEdgeShift / 0.5, 0.0, 1.0));\n" +
+                    "  if ((depth - u_convergence) < 0.0) {\n" +
+                    "    ai_shift *= isLeftEye ? u_shift : (1.0-u_shift);\n" +
+                    "  } else {\n" +
+                    "    ai_shift *= isLeftEye ? (1.0-u_shift) : u_shift;\n" +
+                    "  }\n" +
+                    "  float h_dist = pow(abs(v_TexCoord.x - 0.5) * 2.0, 1.5);\n" +
+                    "  float vignette_factor = 1.0 - smoothstep(vignette_start, 1.0, h_dist);\n" +
+                    "  float final_shift = ai_shift * vignette_factor;\n" +
+                    "  vec2 srcUV = vec2(v_TexCoord.x - final_shift * isLeftEyeIndicator, v_TexCoord.y);\n" +
+                    "  vec4 shiftedColor = texture2D(s_ColorTexture, clamp(srcUV, 0.0, 1.0));\n" +
+                    "  vec4 originalColor = texture2D(s_ColorTexture, v_TexCoord);\n" +
+                    "  float shiftMagnitude = abs(final_shift) / max(parallax_magnitude, 0.001);\n" +
+                    "  float artifactBlendFactor = (1.0 - smoothstep(0.1, 1.0, shiftMagnitude)) * 0.005;\n" +
+                    "  return mix(shiftedColor, originalColor, artifactBlendFactor).rgb;\n" +
+                    "}\n" +
+                    "\n" +
+                    "void main() {\n" +
+                    "  float depth = texture2D(s_DepthTexture, v_TexCoord).r;\n" +
+                    "  float edgeWidth = 0.01;\n" +
+                    "  float depthLeft  = texture2D(s_DepthTexture, vec2(edgeWidth, 0.5)).r;\n" +
+                    "  float depthRight = texture2D(s_DepthTexture, vec2(1.0 - edgeWidth, 0.5)).r;\n" +
+                    "  float p = abs(u_parallax);\n" +
+                    "  float maxEdgeShift = max(abs(p * (depthLeft - 0.5)), abs(p * (depthRight - 0.5)));\n" +
+                    "  vec3 l = eyeColor(-p, depth, maxEdgeShift);\n" +
+                    "  vec3 r = eyeColor(p, depth, maxEdgeShift);\n" +
+                    "  vec3 c = glassWeave(l, r);\n" +
+                    "  if (u_debugMode) { c = vec3(l.r, 0.0, r.b); }\n" +
+                    "  gl_FragColor = vec4(c, 1.0);\n" +
+                    "}\n";
+
+    /**
+     * Side-by-side stream from the host (both eyes already made), woven for the
+     * {@link GlassLens} film. u_mode 1 = 3D, 0 = the frame passed through as it is.
+     */
+    public static final String FRAGMENT_SHADER_SBS_GLASS =
+            "#extension GL_OES_EGL_image_external : require\n" +
+                    "#ifdef GL_FRAGMENT_PRECISION_HIGH\n" +
+                    "precision highp float;\n" +
+                    "#else\n" +
+                    "precision mediump float;\n" +
+                    "#endif\n" +
+                    "varying vec2 v_TexCoord;\n" +
+                    "uniform samplerExternalOES s_ColorTexture;\n" +
+                    "uniform float u_mode;\n" +
+                    GlassLens.GLSL +
+                    "\n" +
+                    "void main() {\n" +
+                    "  if (u_mode < 0.5) { gl_FragColor = vec4(texture2D(s_ColorTexture, v_TexCoord).rgb, 1.0); return; }\n" +
+                    "  vec3 l = texture2D(s_ColorTexture, vec2(v_TexCoord.x * 0.5, v_TexCoord.y)).rgb;\n" +
+                    "  vec3 r = texture2D(s_ColorTexture, vec2(0.5 + v_TexCoord.x * 0.5, v_TexCoord.y)).rgb;\n" +
+                    "  gl_FragColor = vec4(glassWeave(l, r), 1.0);\n" +
+                    "}\n";
+
+    /**
      * An optimized, single-pass Gaussian blur shader that works as a drop-in replacement.
      * It achieves better performance by taking fewer texture samples over the same blur radius.
      * NOTE: For best performance and quality, a two-pass implementation is still highly recommended.

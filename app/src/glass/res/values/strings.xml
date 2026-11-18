@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wording for the glass flavour: Galaxy S25 Ultra with the SpatialGlass 3D film. -->
+<resources>
+
+    <string name="title_stereo_output_mode">3D Output</string>
+    <string name="summary_stereo_output_mode">Side-by-Side feeds 3D glasses. Glasses-Free weaves both eyes for the SpatialGlass film and follows your eyes with the front camera as you move.</string>
+
+    <string name="stereo_output_sbs">Side-by-Side (3D glasses)</string>
+    <string name="stereo_output_interlaced_2v">Glasses-Free 3D (SpatialGlass film)</string>
+
+    <string name="title_render_mode">3D Source</string>
+    <string name="summary_render_mode">What the host is sending. Side by side is woven as it arrives. 2D is turned into 3D by the depth model on this phone. The 3D toggle in the stream menu still switches between flat and 3D either way.</string>
+    <string name="render_mode_2d">Side by Side (host sends 3D)</string>
+    <string name="render_mode_3d_sbs">2D to 3D (AI)</string>
+    <string name="render_mode_3d_sbs_movie">2D to 3D (AI, movie sync)</string>
+</resources>

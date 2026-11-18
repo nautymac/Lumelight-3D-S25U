@@ -17,6 +17,8 @@ import android.widget.FrameLayout;
 import com.limelight.Game;
 import com.limelight.LimeLog;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.utils.GlassLens;
+import com.limelight.utils.GlassSbsRenderer;
 import com.limelight.utils.PanelDriver;
 import com.limelight.utils.Stereo3DRenderer;
 
@@ -51,6 +53,9 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
     private GLSurfaceView mHiddenGlView;
     private int mPanelSurfaceWidth;
     private int mPanelSurfaceHeight;
+
+    // Set on a lens-film screen when the host sends side by side (see init).
+    private GlassSbsRenderer mGlassSbsRenderer;
 
     private SurfaceView mSurfaceView;
     private Surface mCurrentSurface;
@@ -193,6 +198,29 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
             LimeLog.warning("Leia panel gave no usable view; falling back to the shader path");
         }
 
+        // A lens film over an ordinary screen (S25 Ultra + SpatialGlass) has no 3D service to
+        // hand a side-by-side frame to, so when the host already sends both eyes this app
+        // weaves them itself, onto its own GL view, following the tracked eyes.
+        // On the film the stream is always shown through this renderer, whatever the output
+        // setting: with 3D off it passes the frame through as it is, and the 3D toggle
+        // (stream menu or three-finger hold) switches the same view to the woven picture.
+        if (GlassLens.enabled && renderMode == StreamMode.MODE_2D) {
+            GLSurfaceView glSurfaceView = new GLSurfaceView(context);
+            glSurfaceView.setEGLContextClientVersion(2);
+            mGlassSbsRenderer = new GlassSbsRenderer(prefConfig.width, prefConfig.height,
+                    surface -> post(() -> {
+                        mCurrentSurface = surface;
+                        notifySurfaceReady();
+                    }));
+            glSurfaceView.setRenderer(mGlassSbsRenderer);
+            glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            removeView(mSurfaceView);
+            mSurfaceView = glSurfaceView;
+            addView(mSurfaceView, childParams);
+            mSurfaceView.getHolder().addCallback(this);
+            return;
+        }
+
         if (renderMode != StreamMode.MODE_2D) {
             GLSurfaceView glSurfaceView = new GLSurfaceView(context);
             glSurfaceView.setEGLContextClientVersion(3);
@@ -227,7 +255,9 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (renderMode != StreamMode.MODE_2D) {
+        // The lens weave is tied to the screen's own pixels, so its view must not be resized
+        // (composition would rescale it); the renderer boxes the picture itself.
+        if (renderMode != StreamMode.MODE_2D || mGlassSbsRenderer != null) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             return;
         }
@@ -449,7 +479,7 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if (renderMode == StreamMode.MODE_2D && width > 0 && height > 0) {
+        if (renderMode == StreamMode.MODE_2D && mGlassSbsRenderer == null && width > 0 && height > 0) {
             mCurrentSurface = holder.getSurface();
             notifySurfaceReady();
         }
@@ -458,7 +488,11 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if (renderMode == StreamMode.MODE_2D) {
+        if (mGlassSbsRenderer != null) {
+            isSurfaceReady = false;
+            mCurrentSurface = null;
+            mGlassSbsRenderer.release();
+        } else if (renderMode == StreamMode.MODE_2D) {
             isSurfaceReady = false;
             mCurrentSurface = null;
         } else if (mStereoRenderer != null) {

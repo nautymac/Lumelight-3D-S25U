@@ -110,7 +110,25 @@ android {
             buildConfigField "boolean", "FORCE_MAX_BRIGHTNESS", "false"
             applicationIdSuffix ".leia.redmagic"
         }
+
+        // Galaxy S25 Ultra with the SpatialGlass 3D film (2026-11). Not a Leia panel: the
+        // film is only a lens, so the app weaves the eyes itself (GlassLens, measured from
+        // Spatial Glass's own output) and follows the viewer's eyes with the front camera
+        // (MediaPipe irises, src/glass/). Covers both 3D sources: side by side from the host
+        // (GlassSbsRenderer) and 2D made 3D by the depth model (Stereo3DRenderer.drawGlass).
+        glass {
+            dimension "panel"
+            // MediaPipe's face landmarker needs API 24.
+            minSdk 24
+            proguardFile 'proguard-glass.pro'
+            buildConfigField "boolean", "LEIA_BUILD", "false"
+            buildConfigField "boolean", "FORCE_MAX_BRIGHTNESS", "false"
+            applicationIdSuffix ".glass"
+        }
     }
+
+    // The glass flavour's face model is memory-mapped by MediaPipe, so it goes in uncompressed.
+    androidResources { noCompress 'task' }
 
     sourceSets {
         // leiaRedmagic reuses leiaLumepad's Java/manifest/res as-is (identical CNSDK Java
@@ -268,6 +286,8 @@ dependencies {
     // (see the leiaRedmagic flavour comment above) and the connectors are not interchangeable.
     leiaLumepadImplementation fileTree(dir: 'libs', include: ['leia-cnsdk*.jar'])
     leiaRedmagicImplementation fileTree(dir: 'libs/redmagic', include: ['leia-cnsdk*.jar'])
+    // Glass: the viewer's irises from the front camera, to move the weave with the eyes.
+    glassImplementation 'com.google.mediapipe:tasks-vision:0.10.21'
 
     // Unit test dependencies
     testImplementation 'junit:junit:4.13.2'

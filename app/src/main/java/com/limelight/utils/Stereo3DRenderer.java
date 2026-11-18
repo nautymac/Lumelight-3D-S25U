@@ -129,6 +129,9 @@ public class Stereo3DRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
     private int depthMapTextureId;
     private int dibr3dProgram;
     private int dibr3dInterlacedProgram;
+    // Lens-film weave (S25 Ultra + SpatialGlass), only built on the glass flavour.
+    private int dibr3dGlassProgram;
+    private int glassWeaveTexture;
 
     private final AtomicReference<ByteBuffer> latestDepthMap = new AtomicReference<>(null);
     private int fboHandle;
@@ -410,6 +413,12 @@ public class Stereo3DRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
         bilateralBlurProgram = createProgram(ShaderUtils.VERTEX_SHADER, ShaderUtils.OPTIMIZED_SINGLE_PASS_GAUSSIAN_BLUR_SHADER);
         dibr3dProgram = createProgram(ShaderUtils.VERTEX_SHADER, ShaderUtils.FRAGMENT_SHADER_3D);
         dibr3dInterlacedProgram = createProgram(ShaderUtils.VERTEX_SHADER, ShaderUtils.FRAGMENT_SHADER_3D_INTERLACED);
+        if (GlassLens.enabled) {
+            dibr3dGlassProgram = createProgram(ShaderUtils.VERTEX_SHADER, ShaderUtils.FRAGMENT_SHADER_3D_GLASS);
+            glassWeaveTexture = GlassLens.createWeaveTexture();
+        } else {
+            dibr3dGlassProgram = 0;
+        }
 
         initializeFilterFbo();
         initializeIntermediateFbo();
@@ -645,6 +654,40 @@ public class Stereo3DRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
         drawEye(program, getParallax() * 0.06f, convergence, shift);
     }
 
+    /**
+     * Both eyes woven for a lens film over the screen ({@link GlassLens}): one full pass like
+     * {@link #drawInterlaced}, boxed the same way, but the weave follows the film's measured
+     * per-channel curves and the tracked eye position instead of fixed columns.
+     */
+    private void drawGlass(float convergence, float shift) {
+        int surfaceWidth = glSurfaceView.getWidth();
+        int surfaceHeight = glSurfaceView.getHeight();
+
+        int drawWidth = surfaceWidth;
+        int drawHeight = surfaceHeight;
+        if (streamAspectRatio > 0) {
+            boolean widerThanScreen = surfaceWidth > surfaceHeight * streamAspectRatio;
+            if (widerThanScreen != fillDisplay) {
+                drawHeight = surfaceHeight;
+                drawWidth = (int) Math.round(surfaceHeight * streamAspectRatio);
+            } else {
+                drawWidth = surfaceWidth;
+                drawHeight = (int) Math.round(surfaceWidth / streamAspectRatio);
+            }
+        }
+
+        GLES20.glClearColor(0f, 0f, 0f, 1f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        // The weave keys off gl_FragCoord, so boxing the viewport leaves it on the panel's
+        // own pixels. The lens is described for the whole screen, hence its size here.
+        GLES20.glViewport((surfaceWidth - drawWidth) / 2, (surfaceHeight - drawHeight) / 2,
+                drawWidth, drawHeight);
+
+        GLES20.glUseProgram(dibr3dGlassProgram);
+        GlassLens.apply(dibr3dGlassProgram, glassWeaveTexture, 2, surfaceWidth, surfaceHeight);
+        drawEye(dibr3dGlassProgram, getParallax() * 0.06f, convergence, shift);
+    }
+
     private void drawEye(int program, float parallax, float convergence, float shift) {
         GLES20.glUseProgram(program);
         int posHandle = GLES20.glGetAttribLocation(program, "a_Position");
@@ -694,6 +737,8 @@ public class Stereo3DRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
                         drawBothEyesBoxed(dibr3dProgram, prefConfig.convergence_ratio,
                                 prefConfig.balance_shift);
                     }
+                } else if (isInterlaced && !panelOwnsInterlacing && dibr3dGlassProgram != 0) {
+                    drawGlass(prefConfig.convergence_ratio, prefConfig.balance_shift);
                 } else if (isInterlaced && !panelOwnsInterlacing) {
                     drawInterlaced(dibr3dInterlacedProgram, prefConfig.convergence_ratio, prefConfig.balance_shift);
                 } else {
