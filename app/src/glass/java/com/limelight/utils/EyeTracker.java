@@ -252,7 +252,7 @@ final class EyeTracker {
                 }
             }
             if (id == null) {
-                fail("전면 카메라를 찾지 못했습니다");
+                fail(context.getString(com.limelight.R.string.glass_err_no_front));
                 return;
             }
 
@@ -265,7 +265,7 @@ final class EyeTracker {
             }
             faceMode = landmarker != null ? 3 : hwFace;
             if (faceMode == 0) {
-                fail("얼굴 인식을 사용할 수 없습니다");
+                fail(context.getString(com.limelight.R.string.glass_err_no_face));
                 return;
             }
 
@@ -325,19 +325,19 @@ final class EyeTracker {
                 public void onDisconnected(CameraDevice camera) {
                     camera.close();
                     device = null;
-                    fail("카메라 연결이 끊겼습니다");
+                    fail(context.getString(com.limelight.R.string.glass_err_disconnected));
                 }
 
                 @Override
                 public void onError(CameraDevice camera, int error) {
                     camera.close();
                     device = null;
-                    fail("카메라 오류 " + error);
+                    fail(context.getString(com.limelight.R.string.glass_err_camera, error));
                 }
             }, handler);
         } catch (Exception e) {
             Log.e(TAG, "start failed", e);
-            fail("카메라 시작 실패: " + e.getMessage());
+            fail(context.getString(com.limelight.R.string.glass_err_start, e.getMessage()));
         }
     }
 
@@ -400,18 +400,18 @@ final class EyeTracker {
                                 fpsStart = SystemClock.uptimeMillis();
                             } catch (Exception e) {
                                 Log.e(TAG, "request failed", e);
-                                fail("카메라 요청 실패: " + e.getMessage());
+                                fail(context.getString(com.limelight.R.string.glass_err_request, e.getMessage()));
                             }
                         }
 
                         @Override
                         public void onConfigureFailed(CameraCaptureSession s) {
-                            fail("카메라 세션 구성 실패");
+                            fail(context.getString(com.limelight.R.string.glass_err_session_cfg));
                         }
                     }, handler);
         } catch (Exception e) {
             Log.e(TAG, "session failed", e);
-            fail("카메라 세션 실패: " + e.getMessage());
+            fail(context.getString(com.limelight.R.string.glass_err_session, e.getMessage()));
         }
     }
 

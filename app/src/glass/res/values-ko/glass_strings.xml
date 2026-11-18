@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="glass_tool_label">DepthFlix 3D 맞추기</string>
+
+    <string name="glass_tune">3D 조절</string>
+    <string name="glass_tune_close">닫기</string>
+    <string name="glass_tune_phase">위상</string>
+    <string name="glass_tune_track">추적</string>
+    <string name="glass_tune_bright">밝기</string>
+    <string name="glass_tune_contrast">대비</string>
+
+    <string name="glass_step_1">1: 가로</string>
+    <string name="glass_step_2">2: 세로</string>
+    <string name="glass_step_3">3: 이미지</string>
+    <string name="glass_hint_1">화면에서 약 40cm 떨어져서 보세요.\n빨간 줄무늬가 가운데 빨간 가로선과 나란해지도록 아래 막대나 −/+로 조정한 뒤, \'저장\'을 누르고 2단계로 넘어가세요.</string>
+    <string name="glass_hint_2">빨간 줄무늬가 가운데 빨간 세로선과 나란해지도록 조정한 뒤, \'저장\'을 누르고 3단계로 넘어가세요.</string>
+    <string name="glass_hint_3">잘 보일 때 사진을 탭하면 그 순간의 눈 위치가 기록됩니다.\n여러 위치(가운데·왼쪽·오른쪽·가까이·멀리)에서, 필요하면 −/+로 위상을 맞춘 뒤 탭하세요.</string>
+    <string name="glass_lens_badge">간격 %1$.5f (두 손가락 좌우)   ·   기울기 %2$+.5f (두 손가락 위아래)</string>
+    <string name="glass_phase_badge">위상 %1$.3f (좌우로 끌기)   ·   추적 세기 %2$.2f (위아래로 끌기)</string>
+    <string name="glass_mode_original">원본</string>
+    <string name="glass_btn_fit">3D 맞추기</string>
+    <string name="glass_btn_calibrate">보정</string>
+    <string name="glass_btn_prev">◀ 이전</string>
+    <string name="glass_btn_next">다음 ▶</string>
+    <string name="glass_btn_add">사진 추가</string>
+    <string name="glass_btn_restore">보정값 복원</string>
+    <string name="glass_restored">복원: 위상 %1$.4f · 추적 %2$.2f · 간격 %3$.5f · 기울기 %4$+.5f</string>
+    <string name="glass_btn_sample">샘플 사진</string>
+    <string name="glass_btn_close">닫기</string>
+    <string name="glass_track_on">추적 표시: 켬</string>
+    <string name="glass_track_off">추적 표시: 끔</string>
+    <string name="glass_saved">%1$s 저장됨</string>
+    <string name="glass_val_pitch">간격 %1$.5f</string>
+    <string name="glass_val_slant">기울기 %1$+.5f</string>
+    <string name="glass_val_phase">위상 %1$.2f</string>
+    <string name="glass_rec_line">  ·  위상 %1$.2f  ·  좌우로 끌어 가장 선명하게 → 탭  ·  기록 %2$d개</string>
+    <string name="glass_eye_error">눈: 카메라 오류</string>
+    <string name="glass_eye_pos">X %1$+.0f  Y %2$+.0f  거리 %3$.0f%4$s</string>
+    <string name="glass_eye_dist">눈: %1$.0f MM</string>
+    <string name="glass_eye_none">눈: 인식 안 됨</string>
+    <string name="glass_no_face">얼굴이 인식되지 않아 기록하지 않았습니다</string>
+    <string name="glass_recorded">기록 %1$d: X %2$+.0f Y %3$+.0f 거리 %4$.0f mm · 위상 %5$.2f</string>
+    <string name="glass_fit_need">자동 맞춤: 좌우로 30 mm 이상 떨어진 위치 두 곳 이상 기록해야 계산합니다</string>
+    <string name="glass_fit_same">자동 맞춤: %1$d곳 모두 지금 값(위상 %2$.3f, 추적 세기 %3$.2f)으로 기록 → 값 유지</string>
+    <string name="glass_fit_result">자동 맞춤 (%1$d곳): 추적 세기 %2$.2f → %3$.2f, 위상 %4$.3f → %5$.3f, 오차 %6$.3f</string>
+    <string name="glass_btn_save">저장</string>
+    <string name="glass_btn_exit">나가기</string>
+    <string name="glass_btn_done">끝</string>
+    <string name="glass_photo_import_failed">사진을 가져오지 못했습니다</string>
+    <string name="glass_photos_added">사진 %1$d장 추가 · 보관 %2$d장 (길게 눌러 ◀ ▶)</string>
+    <string name="glass_photo_open_failed">사진을 열 수 없습니다</string>
+
+    <string name="glass_tv_starting">카메라 시작 중…</string>
+    <string name="glass_tv_error">추적 오류</string>
+    <string name="glass_tv_status">추적 %1$s · %2$s · %3$.0f fps</string>
+    <string name="glass_on">켬</string>
+    <string name="glass_off">끔</string>
+    <string name="glass_tv_iris">홍채 추적</string>
+    <string name="glass_tv_eyes">눈 인식</string>
+    <string name="glass_tv_box">얼굴 상자</string>
+    <string name="glass_tv_found">얼굴 인식됨</string>
+    <string name="glass_tv_lost_keep">얼굴 없음 (마지막 위치 유지)</string>
+    <string name="glass_tv_lost">얼굴 없음</string>
+    <string name="glass_tv_pos">X %1$+.0f  Y %2$+.0f  거리 %3$.0f mm</string>
+
+    <string name="glass_err_no_front">전면 카메라를 찾지 못했습니다</string>
+    <string name="glass_err_no_face">얼굴 인식을 사용할 수 없습니다</string>
+    <string name="glass_err_disconnected">카메라 연결이 끊겼습니다</string>
+    <string name="glass_err_camera">카메라 오류 %1$d</string>
+    <string name="glass_err_start">카메라 시작 실패: %1$s</string>
+    <string name="glass_err_request">카메라 요청 실패: %1$s</string>
+    <string name="glass_err_session_cfg">카메라 세션 구성 실패</string>
+    <string name="glass_err_session">카메라 세션 실패: %1$s</string>
+</resources>

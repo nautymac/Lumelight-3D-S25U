@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Galaxy S25 Ultra + SpatialGlass film (glass flavour). English is the default; Korean in values-ko. -->
+<resources>
+    <string name="glass_tool_label">DepthFlix 3D Fit</string>
+
+    <!-- 3D tuning bar (player and tool) -->
+    <string name="glass_tune">3D tune</string>
+    <string name="glass_tune_close">Close</string>
+    <string name="glass_tune_phase">Phase</string>
+    <string name="glass_tune_track">Track</string>
+    <string name="glass_tune_bright">Bright</string>
+    <string name="glass_tune_contrast">Contrast</string>
+
+    <!-- Calibration tool -->
+    <string name="glass_step_1">1: Horizontal</string>
+    <string name="glass_step_2">2: Vertical</string>
+    <string name="glass_step_3">3: Image</string>
+    <string name="glass_hint_1">View from about 40 cm.\nAdjust with the bar or −/+ until the red stripes run parallel to the red horizontal line in the middle, then tap Save to go to step 2.</string>
+    <string name="glass_hint_2">Adjust until the red stripes run parallel to the red vertical line in the middle, then tap Save to go to step 3.</string>
+    <string name="glass_hint_3">Tap the picture when it looks right to record your eye position.\nDo it from several places (centre, left, right, near, far), adjusting the phase with −/+ first if needed.</string>
+    <string name="glass_lens_badge">Pitch %1$.5f (two fingers left/right)   ·   Slant %2$+.5f (two fingers up/down)</string>
+    <string name="glass_phase_badge">Phase %1$.3f (drag left/right)   ·   Tracking %2$.2f (drag up/down)</string>
+    <string name="glass_mode_original">Original</string>
+    <string name="glass_btn_fit">3D fit</string>
+    <string name="glass_btn_calibrate">Calibrate</string>
+    <string name="glass_btn_prev">◀ Prev</string>
+    <string name="glass_btn_next">Next ▶</string>
+    <string name="glass_btn_add">Add photos</string>
+    <string name="glass_btn_restore">Restore values</string>
+    <string name="glass_restored">Restored: phase %1$.4f · tracking %2$.2f · pitch %3$.5f · slant %4$+.5f</string>
+    <string name="glass_btn_sample">Sample photo</string>
+    <string name="glass_btn_close">Close</string>
+    <string name="glass_track_on">Tracking view: on</string>
+    <string name="glass_track_off">Tracking view: off</string>
+    <string name="glass_saved">%1$s saved</string>
+    <string name="glass_val_pitch">Pitch %1$.5f</string>
+    <string name="glass_val_slant">Slant %1$+.5f</string>
+    <string name="glass_val_phase">Phase %1$.2f</string>
+    <string name="glass_rec_line">  ·  Phase %1$.2f  ·  drag left/right until sharpest → tap  ·  %2$d recorded</string>
+    <string name="glass_eye_error">Eye: camera error</string>
+    <string name="glass_eye_pos">X %1$+.0f  Y %2$+.0f  dist %3$.0f%4$s</string>
+    <string name="glass_eye_dist">Eye: %1$.0f mm</string>
+    <string name="glass_eye_none">Eye: not found</string>
+    <string name="glass_no_face">No face found, nothing recorded</string>
+    <string name="glass_recorded">Sample %1$d: X %2$+.0f Y %3$+.0f dist %4$.0f mm · phase %5$.2f</string>
+    <string name="glass_fit_need">Auto fit needs two or more samples at least 30 mm apart left/right</string>
+    <string name="glass_fit_same">Auto fit: all %1$d samples at the current values (phase %2$.3f, tracking %3$.2f) → kept</string>
+    <string name="glass_fit_result">Auto fit (%1$d samples): tracking %2$.2f → %3$.2f, phase %4$.3f → %5$.3f, error %6$.3f</string>
+    <string name="glass_btn_save">Save</string>
+    <string name="glass_btn_exit">Exit</string>
+    <string name="glass_btn_done">Done</string>
+    <string name="glass_photo_import_failed">Could not import the photos</string>
+    <string name="glass_photos_added">%1$d photos added · %2$d kept (long-press for ◀ ▶)</string>
+    <string name="glass_photo_open_failed">Cannot open the photo</string>
+
+    <!-- Tracking overlay -->
+    <string name="glass_tv_starting">Starting camera…</string>
+    <string name="glass_tv_error">Tracking error</string>
+    <string name="glass_tv_status">Tracking %1$s · %2$s · %3$.0f fps</string>
+    <string name="glass_on">on</string>
+    <string name="glass_off">off</string>
+    <string name="glass_tv_iris">irises</string>
+    <string name="glass_tv_eyes">eyes</string>
+    <string name="glass_tv_box">face box</string>
+    <string name="glass_tv_found">Face found</string>
+    <string name="glass_tv_lost_keep">No face (keeping last position)</string>
+    <string name="glass_tv_lost">No face</string>
+    <string name="glass_tv_pos">X %1$+.0f  Y %2$+.0f  dist %3$.0f mm</string>
+
+    <!-- Eye tracker errors -->
+    <string name="glass_err_no_front">No front camera found</string>
+    <string name="glass_err_no_face">Face detection is unavailable</string>
+    <string name="glass_err_disconnected">Camera disconnected</string>
+    <string name="glass_err_camera">Camera error %1$d</string>
+    <string name="glass_err_start">Camera start failed: %1$s</string>
+    <string name="glass_err_request">Camera request failed: %1$s</string>
+    <string name="glass_err_session_cfg">Camera session setup failed</string>
+    <string name="glass_err_session">Camera session failed: %1$s</string>
+</resources>

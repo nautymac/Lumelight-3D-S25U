@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+
+
 /**
  * 보면서 바로 맞추는 작은 조절 바: 위상, 추적 세기, 밝기, 대비.
  *
@@ -50,7 +52,7 @@ final class GlassTuner extends FrameLayout {
     private static final int GAP = 1;
     private static final int BOOST = 2;
     private static final int CONTRAST = 3;
-    private static final String[] NAMES = {"위상", "추적", "밝기", "대비"};
+    private final String[] names;
     private static final float[] STEPS = {0.01f, 0.01f, 0.02f, 0.02f};
 
     private final Listener listener;
@@ -69,11 +71,13 @@ final class GlassTuner extends FrameLayout {
                float minGap, float maxGap, Listener listener) {
         super(c);
         this.listener = listener;
+        names = new String[]{c.getString(com.limelight.R.string.glass_tune_phase), c.getString(com.limelight.R.string.glass_tune_track),
+                c.getString(com.limelight.R.string.glass_tune_bright), c.getString(com.limelight.R.string.glass_tune_contrast)};
         min = new float[]{0f, minGap, MIN_BOOST, MIN_CONTRAST};
         max = new float[]{1f, maxGap, MAX_BOOST, MAX_CONTRAST};
 
         toggle = new Button(c);
-        toggle.setText("3D 조절");
+        toggle.setText(com.limelight.R.string.glass_tune);
         toggle.setAllCaps(false);
         toggle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         toggle.setTextColor(Color.WHITE);
@@ -120,7 +124,7 @@ final class GlassTuner extends FrameLayout {
 
     void setOpen(boolean open) {
         panel.setVisibility(open ? VISIBLE : GONE);
-        toggle.setText(open ? "닫기" : "3D 조절");
+        toggle.setText(open ? com.limelight.R.string.glass_tune_close : com.limelight.R.string.glass_tune);
     }
 
     private void set(int which, float v) {
@@ -132,7 +136,7 @@ final class GlassTuner extends FrameLayout {
     private void sync() {
         syncing = true;
         for (int i = 0; i < 4; i++) {
-            text[i].setText(String.format(Locale.US, "%s %.2f", NAMES[i], value[i]));
+            text[i].setText(String.format(Locale.US, "%s %.2f", names[i], value[i]));
             seek[i].setProgress(Math.round((value[i] - min[i]) / (max[i] - min[i]) * SEEK_MAX));
         }
         syncing = false;
