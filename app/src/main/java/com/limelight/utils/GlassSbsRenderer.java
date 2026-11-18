@@ -113,19 +113,10 @@ public class GlassSbsRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
             float a = (float) streamWidth / streamHeight;
             eyeAspect = threeD && a > 2.2f ? a * 0.5f : a;
         }
-        int dw = width;
-        int dh = height;
-        if (eyeAspect > 0f) {
-            boolean wider = width > height * eyeAspect;
-            if (wider != Stereo3DRenderer.fillDisplay) {
-                dh = height;
-                dw = Math.round(height * eyeAspect);
-            } else {
-                dw = width;
-                dh = Math.round(width / eyeAspect);
-            }
-        }
-        GLES20.glViewport((width - dw) / 2, (height - dh) / 2, dw, dh);
+        // Always the whole picture (no fill-and-crop on the film), centred on the panel itself
+        // so the bars either side match even when the window starts past the camera cutout.
+        int[] box = GlassLens.centredBox(width, height, eyeAspect);
+        GLES20.glViewport(box[0], box[1], box[2], box[3]);
 
         GLES20.glUseProgram(program);
         GlassLens.apply(program, weaveTexture, 1, width, height);

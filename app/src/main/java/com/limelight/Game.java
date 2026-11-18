@@ -920,7 +920,13 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 // Avoid resizes/glitches that break the compositor
                 int vw = (prefConfig != null && prefConfig.width > 0) ? prefConfig.width : displayWidth;
                 int vh = (prefConfig != null && prefConfig.height > 0) ? prefConfig.height : displayHeight;
-                try { streamSurfaceView.getHolder().setFixedSize(vw, vh); } catch (Throwable ignored) {}
+                // Not on the SpatialGlass film: there the surface is drawn by this app's weave,
+                // which has to land on the panel's pixels one for one. A buffer fixed at the
+                // stream's size (1920x1080) gets stretched to the window by the compositor,
+                // which enlarges and shifts the picture and smears the weave.
+                if (!GlassLens.enabled) {
+                    try { streamSurfaceView.getHolder().setFixedSize(vw, vh); } catch (Throwable ignored) {}
+                }
                 try { streamSurfaceView.setZOrderOnTop(false); } catch (Throwable ignored) {}
                 try { streamSurfaceView.setZOrderMediaOverlay(false); } catch (Throwable ignored) {}
 
@@ -3148,6 +3154,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         return true;
                     }
 
+                    if (handleGlassThreeFingerHold(event, view)) {
+                        return true;
+                    }
+
                     if (prefConfig.enableMultiTouchGestures || !prefConfig.enableMultiTouchScreen) {
                         int pointerCount = event.getPointerCount();
                         if (pointerCount > 2) {
@@ -3399,6 +3409,58 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         cancelStaleTouchState(event, view);
+        return true;
+    }
+
+    // True from the third finger landing until every finger is up, on the SpatialGlass film.
+    private boolean glassThreeFinger;
+
+    /**
+     * Three-finger hold for 3D on the SpatialGlass film (glass build), whatever the touch
+     * settings say.
+     *
+     * In the default multi-touch mode the shared gesture code only runs when "multi-touch
+     * gestures" is ticked; otherwise a third finger goes straight to the host, which moves
+     * the game rather than switching 3D. On the film 3D is the point of the build, so the
+     * hold is always taken here: once a third finger lands, the touches the first two already
+     * sent to the host are cancelled and nothing more of the gesture reaches it. Holding for
+     * {@link #THREE_FINGER_HOLD_THRESHOLD} switches 3D; lifting sooner does nothing.
+     *
+     * @return true if the event belonged to such a gesture and has been consumed
+     */
+    private boolean handleGlassThreeFingerHold(MotionEvent event, View view) {
+        if (!GlassLens.enabled || !is3DAvailable()) {
+            return false;
+        }
+        int action = event.getActionMasked();
+        if (!glassThreeFinger) {
+            if (action != MotionEvent.ACTION_POINTER_DOWN || event.getPointerCount() != 3) {
+                return false;
+            }
+            glassThreeFinger = true;
+            scheduleThreeFingerHold();
+
+            // Take back whatever the first two fingers started on the host.
+            if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad) {
+                MotionEvent cancel = MotionEvent.obtain(event);
+                cancel.setAction(MotionEvent.ACTION_CANCEL);
+                trySendTouchEvent(view, cancel);
+                cancel.recycle();
+            }
+            for (TouchContext context : touchContextMap) {
+                context.cancelTouch();
+                context.setPointerCount(0);
+            }
+            return true;
+        }
+
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            glassThreeFinger = false;
+            cancelThreeFingerHold();
+        } else if (action == MotionEvent.ACTION_POINTER_UP) {
+            // A finger lifted before the hold completed: no toggle this time.
+            cancelThreeFingerHold();
+        }
         return true;
     }
 

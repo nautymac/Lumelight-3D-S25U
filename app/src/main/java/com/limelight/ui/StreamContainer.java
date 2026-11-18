@@ -214,6 +214,7 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
                     }));
             glSurfaceView.setRenderer(mGlassSbsRenderer);
             glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            GlassLens.follow(glSurfaceView);
             removeView(mSurfaceView);
             mSurfaceView = glSurfaceView;
             addView(mSurfaceView, childParams);
@@ -227,6 +228,9 @@ public class StreamContainer extends FrameLayout implements SurfaceHolder.Callba
             mStereoRenderer = new Stereo3DRenderer(glSurfaceView, this, context, prefConfig);
             glSurfaceView.setRenderer(mStereoRenderer);
             glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            if (GlassLens.enabled) {
+                GlassLens.follow(glSurfaceView);
+            }
             mSurfaceView = glSurfaceView;
             addView(mSurfaceView, childParams);
         }

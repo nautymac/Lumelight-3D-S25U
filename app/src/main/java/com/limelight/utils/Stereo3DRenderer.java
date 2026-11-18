@@ -663,25 +663,18 @@ public class Stereo3DRenderer implements GLSurfaceView.Renderer, SurfaceTexture.
         int surfaceWidth = glSurfaceView.getWidth();
         int surfaceHeight = glSurfaceView.getHeight();
 
-        int drawWidth = surfaceWidth;
-        int drawHeight = surfaceHeight;
-        if (streamAspectRatio > 0) {
-            boolean widerThanScreen = surfaceWidth > surfaceHeight * streamAspectRatio;
-            if (widerThanScreen != fillDisplay) {
-                drawHeight = surfaceHeight;
-                drawWidth = (int) Math.round(surfaceHeight * streamAspectRatio);
-            } else {
-                drawWidth = surfaceWidth;
-                drawHeight = (int) Math.round(surfaceWidth / streamAspectRatio);
-            }
-        }
+        // The whole picture at the stream's shape (no fill-and-crop on the film), centred on
+        // the panel itself so the bars either side match even when the window starts past the
+        // camera cutout.
+        float aspect = streamAspectRatio > 0 ? (float) streamAspectRatio
+                : (prefConfig.height > 0 ? (float) prefConfig.width / prefConfig.height : 0f);
+        int[] box = GlassLens.centredBox(surfaceWidth, surfaceHeight, aspect);
 
         GLES20.glClearColor(0f, 0f, 0f, 1f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        // The weave keys off gl_FragCoord, so boxing the viewport leaves it on the panel's
-        // own pixels. The lens is described for the whole screen, hence its size here.
-        GLES20.glViewport((surfaceWidth - drawWidth) / 2, (surfaceHeight - drawHeight) / 2,
-                drawWidth, drawHeight);
+        // The weave keys off gl_FragCoord (plus the view's place on the panel), so boxing the
+        // viewport leaves it on the panel's own pixels.
+        GLES20.glViewport(box[0], box[1], box[2], box[3]);
 
         GLES20.glUseProgram(dibr3dGlassProgram);
         GlassLens.apply(dibr3dGlassProgram, glassWeaveTexture, 2, surfaceWidth, surfaceHeight);

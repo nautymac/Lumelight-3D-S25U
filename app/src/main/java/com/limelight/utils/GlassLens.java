@@ -39,6 +39,73 @@ public final class GlassLens {
     /** Size of one screen pixel in mm. */
     public static volatile float pixelMm = 0.0507f;
 
+    // The physical panel (current rotation) and where the GL view sits on it. The window can
+    // start past the camera cutout, so the view's own pixels are not the panel's: the weave
+    // and the centring both work in panel pixels, from these.
+    public static volatile int screenW = 0;
+    public static volatile int screenH = 0;
+    public static volatile int viewLeft = 0;
+    public static volatile int viewTop = 0;
+
+    /** Records where a view is on the panel. Call on the UI thread after layout. */
+    public static void trackView(android.view.View v) {
+        int[] at = new int[2];
+        v.getLocationOnScreen(at);
+        if (at[0] != viewLeft || at[1] != viewTop) {
+            android.util.Log.i("GlassLens", "view at " + at[0] + "," + at[1] + " size "
+                    + v.getWidth() + "x" + v.getHeight() + " on panel " + screenW + "x" + screenH);
+        }
+        viewLeft = at[0];
+        viewTop = at[1];
+    }
+
+    /**
+     * Keeps {@link #viewLeft}/{@link #viewTop} current for a GL view: on every layout and
+     * every frame the window draws, so a window that settles past the camera cutout after
+     * the first frame is still picked up.
+     */
+    public static void follow(final android.view.View v) {
+        v.addOnLayoutChangeListener((view, l, t, r, b, ol, ot, or, ob) -> trackView(view));
+        v.getViewTreeObserver().addOnGlobalLayoutListener(() -> trackView(v));
+        v.post(() -> trackView(v));
+    }
+
+    private static String lastBox = "";
+
+    /**
+     * Viewport (x, y, w, h in view pixels, GL bottom-left origin) for a picture of the given
+     * aspect, as large as fits and centred on the PHYSICAL panel, so the bars either side are
+     * the same width whatever the window's offset. Falls back to the view when the panel size
+     * is not known yet.
+     */
+    public static int[] centredBox(int viewW, int viewH, float aspect) {
+        int sw = screenW > 0 ? screenW : viewW;
+        int sh = screenH > 0 ? screenH : viewH;
+        int left = screenW > 0 ? viewLeft : 0;
+        int top = screenH > 0 ? viewTop : 0;
+        int w = sw;
+        int h = sh;
+        if (aspect > 0f) {
+            if (sw > sh * aspect) {
+                h = sh;
+                w = Math.round(sh * aspect);
+            } else {
+                w = sw;
+                h = Math.round(sw / aspect);
+            }
+        }
+        int x = (sw - w) / 2 - left;
+        int yTopDown = (sh - h) / 2 - top;
+        int y = viewH - (yTopDown + h);
+        String box = "view " + viewW + "x" + viewH + " at " + left + "," + top + " aspect "
+                + aspect + " -> box " + x + "," + y + " " + w + "x" + h;
+        if (!box.equals(lastBox)) {
+            lastBox = box;
+            android.util.Log.i("GlassLens", box);
+        }
+        return new int[]{x, y, w, h};
+    }
+
     // Latest eye position from the tracker: mm from the screen centre, x right, y up, z out.
     public static volatile boolean eyeValid = false;
     public static volatile float eyeX = 0f;
@@ -61,9 +128,10 @@ public final class GlassLens {
             "uniform vec2 u_glRef;\n" +
             "uniform float u_glK0;\n" +
             "uniform float u_glSwap;\n" +
+            "uniform vec2 u_glOrigin;\n" +   // view's bottom-left on the panel, panel pixels
             "uniform sampler2D s_glWeave;\n" +
             "vec3 glassWeave(vec3 l, vec3 r) {\n" +
-            "  vec2 p = gl_FragCoord.xy;\n" +
+            "  vec2 p = gl_FragCoord.xy + u_glOrigin;\n" +
             "  vec2 q = p + u_glEye * u_glK - u_glRef * u_glK0 - p * (u_glK - u_glK0);\n" +
             "  float ph = fract((q.x + q.y * u_glSlant) / u_glPitch + u_glPhase);\n" +
             "  vec3 wl = texture2D(s_glWeave, vec2(ph, 0.25)).rgb;\n" +
@@ -96,7 +164,13 @@ public final class GlassLens {
      * Sets the weave uniforms on {@code program}, which must be current, for a screen of
      * {@code width} x {@code height} pixels, and binds the weave table to {@code unit}.
      */
-    public static void apply(int program, int weaveTexture, int unit, int width, int height) {
+    public static void apply(int program, int weaveTexture, int unit, int viewW, int viewH) {
+        // Everything below is in panel pixels: the lens sits on the panel, not on the window.
+        int width = screenW > 0 ? screenW : viewW;
+        int height = screenH > 0 ? screenH : viewH;
+        float ox = screenW > 0 ? viewLeft : 0f;
+        float oy = screenH > 0 ? screenH - (viewTop + viewH) : 0f;
+        GLES20.glUniform2f(GLES20.glGetUniformLocation(program, "u_glOrigin"), ox, oy);
         GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glPitch"), pitch);
         GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glSlant"), slant);
         GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glPhase"), phase);

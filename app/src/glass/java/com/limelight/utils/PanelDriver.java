@@ -77,6 +77,9 @@ public final class PanelDriver {
         wm.getDefaultDisplay().getRealMetrics(m);
         pixelMm = 25.4f / m.xdpi;
         GlassLens.pixelMm = pixelMm;
+        // Held in landscape for 3D, so the panel is the long side across.
+        GlassLens.screenW = Math.max(m.widthPixels, m.heightPixels);
+        GlassLens.screenH = Math.min(m.widthPixels, m.heightPixels);
         Log.i(TAG, String.format(Locale.US, "S25 film: pixel %.4f mm, pitch %.5f slant %.5f phase %.3f gap %.2f",
                 pixelMm, GlassLens.pitch, GlassLens.slant, GlassLens.phase, GlassLens.gap));
 
