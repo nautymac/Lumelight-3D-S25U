@@ -35,6 +35,11 @@ public final class GlassLens {
     public static volatile float trackY = 1.0f;
     public static volatile boolean swap = false;
     public static volatile boolean tracking = true;
+    // 3D is dimmer than 2D on the film (each eye gets only its share of the subpixels, with a
+    // dark gap between the views) and the screen is already at full brightness, so the
+    // picture is lifted instead: 1 - (1 - c)^boost, then contrast about mid grey.
+    public static volatile float boost = 1.4f;
+    public static volatile float contrast = 1.15f;
 
     /** Size of one screen pixel in mm. */
     public static volatile float pixelMm = 0.0507f;
@@ -129,8 +134,17 @@ public final class GlassLens {
             "uniform float u_glK0;\n" +
             "uniform float u_glSwap;\n" +
             "uniform vec2 u_glOrigin;\n" +   // view's bottom-left on the panel, panel pixels
+            "uniform float u_glBoost;\n" +
+            "uniform float u_glContrast;\n" +
             "uniform sampler2D s_glWeave;\n" +
+            "vec3 glassTone(vec3 c) {\n" +
+            "  c = 1.0 - pow(1.0 - clamp(c, 0.0, 1.0), vec3(u_glBoost));\n" +
+            "  return clamp((c - 0.5) * u_glContrast + 0.5, 0.0, 1.0);\n" +
+            "}\n" +
             "vec3 glassWeave(vec3 l, vec3 r) {\n" +
+            // Lift the pictures, not the weights: the gap between the views stays as dark.
+            "  l = glassTone(l);\n" +
+            "  r = glassTone(r);\n" +
             "  vec2 p = gl_FragCoord.xy + u_glOrigin;\n" +
             "  vec2 q = p + u_glEye * u_glK - u_glRef * u_glK0 - p * (u_glK - u_glK0);\n" +
             "  float ph = fract((q.x + q.y * u_glSlant) / u_glPitch + u_glPhase);\n" +
@@ -191,6 +205,8 @@ public final class GlassLens {
         GLES20.glUniform2f(GLES20.glGetUniformLocation(program, "u_glRef"), width / 2f, height / 2f);
         GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glK0"), k0);
         GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glSwap"), swap ? 1f : 0f);
+        GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glBoost"), boost);
+        GLES20.glUniform1f(GLES20.glGetUniformLocation(program, "u_glContrast"), contrast);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, weaveTexture);
         GLES20.glUniform1i(GLES20.glGetUniformLocation(program, "s_glWeave"), unit);

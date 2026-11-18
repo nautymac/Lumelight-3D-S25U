@@ -40,6 +40,9 @@ final class GlassSettings {
     static final float DEFAULT_PHASE = 0.65f;
     static final float DEFAULT_GAP = 2.0f;
     static final float DEFAULT_TRACK_Y = 1.0f;
+    /** 3D 는 각 눈에 화소의 일부만 가서 어둡다 (화면 밝기는 이미 최대). 그림을 기본으로 올린다. */
+    static final float DEFAULT_BOOST = 1.4f;
+    static final float DEFAULT_CONTRAST = 1.15f;
     /** Tracking-strength range that looks right on this film at 30-40 cm (user, 2026-11-18). */
     static final float MIN_GAP = 1.5f;
     static final float MAX_GAP = 2.5f;
@@ -55,6 +58,9 @@ final class GlassSettings {
     volatile float gap;
     /** Factor on the tracked vertical eye offset (measured: reversed, about half). */
     volatile float trackY;
+    /** 3D 밝기 (1 = 그대로) 와 대비 (1 = 그대로). */
+    volatile float boost;
+    volatile float contrast;
     volatile int mode;
     volatile int layout;
     volatile boolean swap;
@@ -77,6 +83,8 @@ final class GlassSettings {
         phase = prefs.getFloat("phase", DEFAULT_PHASE);
         gap = prefs.getFloat("gap", DEFAULT_GAP);
         trackY = prefs.getFloat("trackY", DEFAULT_TRACK_Y);
+        boost = prefs.getFloat("boost", DEFAULT_BOOST);
+        contrast = prefs.getFloat("contrast", DEFAULT_CONTRAST);
         mode = prefs.getInt("mode", MODE_3D);
         layout = prefs.getInt("layout", LAYOUT_SBS);
         swap = prefs.getBoolean("swap", false);
@@ -115,6 +123,8 @@ final class GlassSettings {
         phase = DEFAULT_PHASE;
         gap = DEFAULT_GAP;
         trackY = DEFAULT_TRACK_Y;
+        boost = DEFAULT_BOOST;
+        contrast = DEFAULT_CONTRAST;
         swap = false;
         subpixel = true;
         flipX = false;
@@ -128,6 +138,8 @@ final class GlassSettings {
                 .putFloat("phase", phase)
                 .putFloat("gap", gap)
                 .putFloat("trackY", trackY)
+                .putFloat("boost", boost)
+                .putFloat("contrast", contrast)
                 .putInt("mode", mode)
                 .putInt("layout", layout)
                 .putBoolean("swap", swap)

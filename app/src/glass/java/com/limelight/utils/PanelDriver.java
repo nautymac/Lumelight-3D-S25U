@@ -103,6 +103,8 @@ public final class PanelDriver {
         GlassLens.gap = s.gap;
         GlassLens.trackY = s.trackY;
         GlassLens.swap = s.swap;
+        GlassLens.boost = s.boost;
+        GlassLens.contrast = s.contrast;
         GlassLens.tracking = s.tracking;
         return s;
     }
@@ -167,12 +169,16 @@ public final class PanelDriver {
     private void showTuner(boolean show) {
         Activity a = activityRef.get();
         if (show && a != null && tunerActivity != a) {
-            tuner = new GlassTuner(a, GlassLens.phase, GlassLens.gap,
-                    GlassSettings.MIN_GAP, GlassSettings.MAX_GAP, (phase, gap) -> {
+            tuner = new GlassTuner(a, GlassLens.phase, GlassLens.gap, GlassLens.boost, GlassLens.contrast,
+                    GlassSettings.MIN_GAP, GlassSettings.MAX_GAP, (phase, gap, boost, contrast) -> {
                         GlassLens.phase = phase;
                         GlassLens.gap = gap;
+                        GlassLens.boost = boost;
+                        GlassLens.contrast = contrast;
                         settings.phase = phase;
                         settings.gap = gap;
+                        settings.boost = boost;
+                        settings.contrast = contrast;
                         settings.save();
                     });
             a.addContentView(tuner, new android.view.ViewGroup.LayoutParams(
