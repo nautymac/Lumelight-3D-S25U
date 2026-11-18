@@ -920,11 +920,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 // Avoid resizes/glitches that break the compositor
                 int vw = (prefConfig != null && prefConfig.width > 0) ? prefConfig.width : displayWidth;
                 int vh = (prefConfig != null && prefConfig.height > 0) ? prefConfig.height : displayHeight;
-                // Not on the SpatialGlass film: there the surface is drawn by this app's weave,
-                // which has to land on the panel's pixels one for one. A buffer fixed at the
-                // stream's size (1920x1080) gets stretched to the window by the compositor,
-                // which enlarges and shifts the picture and smears the weave.
-                if (!GlassLens.enabled) {
+                // Only where the decoder draws straight to the screen. A woven 3D picture --
+                // the Leia panel's own view (CNSDK never sets its buffer size), the shader
+                // weave, the SpatialGlass weave -- has to land on the panel's pixels one for
+                // one; a buffer fixed at the stream's size (1920x1080 on a 2560x1600 panel)
+                // is stretched by the compositor, which resamples the weave and breaks 3D at
+                // any resolution but the panel's own. That is why lower stream resolutions
+                // never worked in 3D on the Leia builds.
+                if (streamContainer.isDirectDecodeSurface()) {
                     try { streamSurfaceView.getHolder().setFixedSize(vw, vh); } catch (Throwable ignored) {}
                 }
                 try { streamSurfaceView.setZOrderOnTop(false); } catch (Throwable ignored) {}
