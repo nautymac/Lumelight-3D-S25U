@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="128" alt="Lumelight 3D S25">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="128" alt="Lumelight 3D S25U">
 </p>
 
 <h1 align="center">Lumelight 3D — S25 Ultra</h1>
