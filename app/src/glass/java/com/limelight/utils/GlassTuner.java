@@ -67,6 +67,19 @@ final class GlassTuner extends FrameLayout {
     private LinearLayout panel;     // 버튼의 람다가 읽으므로 final 이 아니다
     private boolean syncing;
 
+    /**
+     * The bar closes by itself: this long after the finger lifts once something was changed,
+     * and after IDLE_CLOSE_MS when it was only opened or touched without a change
+     * (as in DepthFlix; a bar left open sits over the game).
+     */
+    private static final long AUTO_CLOSE_MS = 1500;
+    private static final long IDLE_CLOSE_MS = 5000;
+    private final Runnable autoClose = () -> setOpen(false);
+    /** A finger is down on the bar or its button: never close under it. */
+    private boolean touching;
+    /** Something was changed since the bar opened. */
+    private boolean changed;
+
     GlassTuner(Context c, float phase, float gap, float boost, float contrast,
                float minGap, float maxGap, Listener listener) {
         super(c);
@@ -98,7 +111,8 @@ final class GlassTuner extends FrameLayout {
         panel.setPadding(dp(8), dp(4), dp(8), dp(4));
         panel.setBackground(round(0xCC202020));
         panel.setClickable(true);   // 바 위의 터치가 아래 화면으로 새지 않게
-        for (int i = 0; i < 4; i++) {
+        // Top to bottom: brightness, contrast, tracking, phase (as in DepthFlix).
+        for (int i : new int[]{BOOST, CONTRAST, GAP, PHASE}) {
             text[i] = label();
             seek[i] = seekBar(i);
             panel.addView(row(i));
@@ -123,13 +137,47 @@ final class GlassTuner extends FrameLayout {
     }
 
     void setOpen(boolean open) {
+        removeCallbacks(autoClose);
+        changed = false;
         panel.setVisibility(open ? VISIBLE : GONE);
         toggle.setText(open ? com.limelight.R.string.glass_tune_close : com.limelight.R.string.glass_tune);
+        if (open) postDelayed(autoClose, IDLE_CLOSE_MS);
+    }
+
+    private void armAutoClose() {
+        removeCallbacks(autoClose);
+        if (panel.getVisibility() == VISIBLE) {
+            postDelayed(autoClose, changed ? AUTO_CLOSE_MS : IDLE_CLOSE_MS);
+        }
+    }
+
+    /**
+     * Watches every touch that lands on the bar or its button, to hold the bar open while a
+     * finger is on it and to time its closing from the moment the finger lifts.
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        boolean handled = super.dispatchTouchEvent(e);
+        int a = e.getActionMasked();
+        if (a == MotionEvent.ACTION_DOWN) {
+            if (handled) {
+                touching = true;
+                removeCallbacks(autoClose);
+            }
+        } else if (a == MotionEvent.ACTION_UP || a == MotionEvent.ACTION_CANCEL) {
+            if (touching) {
+                touching = false;
+                armAutoClose();
+            }
+        }
+        return handled;
     }
 
     private void set(int which, float v) {
         value[which] = which == PHASE ? wrap(v) : clamp(which, v);
         sync();
+        changed = true;
+        if (!touching) armAutoClose();
         listener.onTune(value[PHASE], value[GAP], value[BOOST], value[CONTRAST]);
     }
 
@@ -146,7 +194,8 @@ final class GlassTuner extends FrameLayout {
         LinearLayout r = new LinearLayout(getContext());
         r.setOrientation(LinearLayout.HORIZONTAL);
         r.setGravity(Gravity.CENTER_VERTICAL);
-        r.addView(text[which], new LinearLayout.LayoutParams(dp(64), ViewGroup.LayoutParams.WRAP_CONTENT));
+        // 88 dp: "Contrast 1.15" wrapped onto two lines at 64 dp.
+        r.addView(text[which], new LinearLayout.LayoutParams(dp(88), ViewGroup.LayoutParams.WRAP_CONTENT));
         r.addView(stepButton("−", which, -1), new LinearLayout.LayoutParams(dp(34), dp(30)));
         r.addView(seek[which], new LinearLayout.LayoutParams(0, dp(30), 1f));
         r.addView(stepButton("+", which, +1), new LinearLayout.LayoutParams(dp(34), dp(30)));
@@ -235,6 +284,7 @@ final class GlassTuner extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         repeat.removeCallbacksAndMessages(null);
+        removeCallbacks(autoClose);
         super.onDetachedFromWindow();
     }
 
