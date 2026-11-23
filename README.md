@@ -31,7 +31,7 @@ Leia 태블릿과 달리 이 필름은 **렌즈일 뿐**이라 기기에 3D 엔�
 | **PC가 보내는 SBS 그대로 3D** | 3D Source = *좌우 분할 (PC가 3D로 보냄)*. Geo-11, 3D Vision, SBS 영상 등을 필름에 맞춰 섞습니다. |
 | **2D 게임을 3D로** | 3D Source = *2D → 3D (AI)*. 폰의 깊이 모델로 3D를 만듭니다. |
 | **세 손가락 1초** | 언제든 SBS 그대로 ↔ 필름 3D 전환. 터치 설정과 상관없이 동작합니다. |
-| **3D 조절 바** | 3D 중 오른쪽 위 **3D 조절** 버튼 → 위상·추적 세기·밝기·대비를 보면서 맞춥니다. 값은 저장됩니다. |
+| **3D 조절 바** | 3D 중 오른쪽 위 **3D 조절** 버튼 → 위에서부터 밝기·대비·추적·위상을 보면서 맞춥니다. 값은 저장됩니다. 값을 바꾸면 1.5초 뒤에, 그냥 열어 두기만 하면 5초 뒤에 스스로 닫힙니다. |
 | **밝기·대비 보정** | 필름 3D는 각 눈에 화소 일부만 가서 어둡습니다. 기본으로 밝기 1.4, 대비 1.15로 올립니다(조절 가능). |
 | **16:9 정중앙** | 1080p 등 어떤 해상도도 화면 정중앙에 같은 여백으로 놓고, 화소를 늘리지 않아 위빙이 정확합니다. |
 
@@ -79,7 +79,7 @@ Unlike the Leia tablets, the film is **only a lens**: the phone has no 3D engine
 | **3D from the PC's side-by-side** | 3D Source = *Side by Side (host sends 3D)*. Geo-11, 3D Vision, SBS videos and the like are woven for the film. |
 | **2D games in 3D** | 3D Source = *2D to 3D (AI)*. The phone's depth model makes the 3D. |
 | **Three-finger hold (1 s)** | Switches between plain side-by-side and film 3D at any time, whatever the touch settings. |
-| **3D tune bar** | While in 3D, tap **3D tune** (top right) to adjust phase, tracking strength, brightness and contrast while watching. Values are saved. |
+| **3D tune bar** | While in 3D, tap **3D tune** (top right) to adjust brightness, contrast, tracking and phase (from the top) while watching. Values are saved. The bar closes by itself 1.5 s after a change, or after 5 s if you just leave it open. |
 | **Brightness and contrast lift** | Film 3D is dimmer because each eye gets only part of the pixels. The picture is lifted by default (brightness 1.4, contrast 1.15), adjustable. |
 | **16:9 dead centre** | Any resolution (1080p included) sits in the exact centre with equal bars, and pixels are never stretched, so the weave stays exact. |
 
